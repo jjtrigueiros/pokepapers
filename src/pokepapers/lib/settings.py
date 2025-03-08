@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 
 class AppSettings(BaseSettings):
@@ -12,7 +12,7 @@ class AppSettings(BaseSettings):
     PATTERNS_DIRECTORY: Path = Path("./out/patterns/")
     WALLPAPER_DIRECTORY: Path = Path("./out/wallpapers/")
     POKEAPI_URL: str = "https://pokeapi.co/api/v2/"
-    NUMBER_OF_POKEMON = 845
+    NUMBER_OF_POKEMON: int = 845
     # Gen 1 - #151 Mew
     # ...
     # Gen 4 - #493 Arceus

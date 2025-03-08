@@ -1,16 +1,18 @@
-#!usr/bin/env python3
-
+import asyncio
+from pathlib import Path
 from time import perf_counter
 
+import aiohttp
 import cv2
 import typer
 
-from .lib import settings
-from .lib.pokeapi import PokeAPI
-from .model.download_image import download_from_original_stitch
-from .model.pokemon import ALL_POKEMON
-from .model.transform_image import transform_image
-from .resolutions import autocomplete_resolution_name, get_resolution_by_name
+from pokepapers.lib import settings
+from pokepapers.lib.pokeapi import PokeAPI
+from pokepapers.model.pokemon import ALL_POKEMON
+from pokepapers.model.transform_image import transform_image
+from pokepapers.resolutions import autocomplete_resolution_name, get_resolution_by_name
+from pokepapers.services.image_downloader import create_image_downloader
+from pokepapers.services.scrapers.serebii import SerebiiPokeprintCollector
 
 
 app = typer.Typer()
@@ -23,13 +25,22 @@ client = PokeAPI()
 def download():
     """
     Downloads all Pokémon patterns into the configured output folder.
-    Default: download from Original Stitch.
-    Planned: download from Serebii or Bulbapedia.
-    Planned (future): download from self-hosted API/DB.
+    Default: download from Serebii.
+    Planned: download from Bulbapedia or self-hosted API/DB.
     """
+    asyncio.run(download_async())
+
+
+async def download_async():
     start_time = perf_counter()
-    download_from_original_stitch()
+    async with aiohttp.ClientSession() as session:
+        page = (await SerebiiPokeprintCollector(session).fetch_collection_pages()).get('Kanto')
+        urls = await SerebiiPokeprintCollector(session).fetch_pokeprint_urls(page)
+    async with aiohttp.ClientSession() as session:
+        imdl = create_image_downloader(path=Path("./out/downloaded"), session=session)
+        await imdl.download_images(urls)
     print(f"Finished in {round(perf_counter() - start_time, 2)} seconds!")
+
 
 
 def autocomplete_pkmn_name(incomplete: str):
@@ -91,3 +102,7 @@ def generate(
     print(output_file)
     output_file.parent.mkdir(exist_ok=True)
     cv2.imwrite(str(output_file), output_image)
+
+
+
+
