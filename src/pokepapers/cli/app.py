@@ -1,4 +1,4 @@
-from pokepapers.cli import create_app, settings
+from pokepapers.cli import create_app
 
 
-app = create_app(settings)
+app = create_app()

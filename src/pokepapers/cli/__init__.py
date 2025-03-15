@@ -4,13 +4,11 @@ from pathlib import Path
 from time import perf_counter
 
 import aiohttp
-import cv2
 import typer
 from loguru import logger
 
 from pokepapers.cli.settings import AppSettings
-from pokepapers.model.transform_image import transform_image
-from pokepapers.resolutions import autocomplete_resolution_name, get_resolution_by_name
+from pokepapers.resolutions import autocomplete_resolution_name
 from pokepapers.services.image_downloader import create_image_downloader
 from pokepapers.services.scrapers.serebii import SerebiiPokeprintCollector
 
@@ -125,7 +123,7 @@ def generate(
     raise NotImplementedError
 
 
-def create_app(settings: AppSettings, use_callback: bool = True):
+def create_app(settings: AppSettings = settings, use_callback: bool = True):
     app = typer.Typer(
         no_args_is_help=True,
     )

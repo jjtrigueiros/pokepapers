@@ -1,7 +1,7 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.2.0
     hooks:
     -   id: trailing-whitespace
@@ -9,23 +9,24 @@ repos:
     -   id: check-yaml
     -   id: check-added-large-files
 
-    # Poetry
--   repo: https://github.com/python-poetry/poetry
-    rev: 1.4.1
+  # uv
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    # uv version
+    rev: 0.6.6
     hooks:
-      - id: poetry-check
-      - id: poetry-lock
-      - id: poetry-export
-        args: ["-f", "requirements.txt", "-o", "requirements.txt"]
+      - id: uv-lock
+      - id: uv-export
 
-    # Black
--   repo: https://github.com/psf/black
+  # Black
+  - repo: https://github.com/psf/black
     rev: 23.1.0
     hooks:
       - id: black
 
-    # Ruff
--   repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: 'v0.0.261'
+  # Ruff
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: 'v0.11.0'
     hooks:
-    -   id: ruff
+      - id: ruff
+        args: [ --fix ]
+      - id: ruff-format
