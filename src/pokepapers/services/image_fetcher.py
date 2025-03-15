@@ -11,7 +11,7 @@ class ImageFetcher:
     async def fetch_image(self, url: str):
         async with self.session.get(url) as response:
             if response.status == 200:
-                logger.info(f"Fetched: {url}")
+                logger.debug(f"Fetched: {url}")
                 return await response.read()
             else:
                 response.raise_for_status()

@@ -1,9 +1,4 @@
-from typing import Union
-
-import requests
 from pydantic import BaseModel
-
-from . import settings
 
 
 class PokemonSpecies:
@@ -60,22 +55,3 @@ class Language(BaseModel):
             - Language(es).name_in(Language(en)) -> Spanish
         """
         raise NotImplementedError()
-
-
-class PokeAPI:
-    def __init__(self):
-        self.api_url = settings.app.POKEAPI_URL
-
-    def get_pokemon_species(self, id_or_name: Union[int, str]) -> PokemonSpecies:
-        json = requests.get(f"{self.api_url}/pokemon-species/{id_or_name}").json()
-        return PokemonSpecies(json)
-
-    def list_pokemon_species(self, limit: int = 0) -> list[str]:
-        """
-        Returns an ordered (by national pokédex number) list of Pokémon names.
-        """
-        if not limit:
-            limit = settings.app.NUMBER_OF_POKEMON
-        url = f"{self.api_url}/pokemon-species/?limit={limit}"
-        api_data = requests.get(url).json()
-        return [pkmn["name"] for pkmn in api_data["results"]]

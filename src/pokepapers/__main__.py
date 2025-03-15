@@ -1,5 +1,4 @@
-from pokepapers.cli import app
+from pokepapers.cli.app import app
 
 
-if __name__ == "__main__":
-    app()
+app()
