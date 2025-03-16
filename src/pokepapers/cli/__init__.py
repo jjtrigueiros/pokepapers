@@ -1,4 +1,5 @@
 import asyncio
+import cv2
 from typing_extensions import Annotated
 from pathlib import Path
 from time import perf_counter
@@ -8,7 +9,8 @@ import typer
 from loguru import logger
 
 from pokepapers.cli.settings import AppSettings
-from pokepapers.resolutions import autocomplete_resolution_name
+from pokepapers.model.transform_image import transform_image
+from pokepapers.resolutions import autocomplete_resolution_name, get_resolution_by_name
 from pokepapers.services.image_downloader import create_image_downloader
 from pokepapers.services.scrapers.serebii import SerebiiPokeprintCollector
 
@@ -84,10 +86,11 @@ def search(
 
 
 def generate(
-    input: Path = typer.Argument(None, autocompletion=None),
+    input: Path = typer.Argument(),
+    output: Annotated[Path, typer.Option()] = settings["transforms_dir"],
     width: int = typer.Option(1920, "--width", "-w"),
     height: int = typer.Option(1080, "--height", "-h"),
-    preset: str = typer.Option(
+    preset: str | None = typer.Option(
         None, "--preset", "-p", autocompletion=autocomplete_resolution_name
     ),
     scaling: float = typer.Option(1.0, "--scaling", "-s"),
@@ -96,31 +99,32 @@ def generate(
     Generates a wallpaper featuring the Pokémon with chosen ID,
     with the set width, height and scaling factor (default 1920x1080 at x1.0 scale).
     """
-    # if preset:  # override width and height
-    #     resolution = get_resolution_by_name(preset)
-    #     width = resolution.width
-    #     height = resolution.height
+    if preset:  # override width and height
+        resolution = get_resolution_by_name(preset)
+        width = resolution.width
+        height = resolution.height
 
     # img_local_matches = settings.app.PATTERNS_DIRECTORY.glob(f"**/*_{pokemon}*.*")
     # if not (input_file := next(img_local_matches, None)):
     #     print("Image not found locally.")
     #     return
 
-    # # generate output filename
-    # i, r = divmod(scaling, 1)
-    # i = int(i)
-    # r = round(100 * r)
-    # output_file = (
-    #     settings.app.WALLPAPER_DIRECTORY
-    #     / input_file.with_stem(f"{input_file.stem}_{width}x{height}_{i}p{r}").name
-    # )
+    if output.suffixes:  # guess it's a file
+        output_file = output
+    else:
+        # generate output filename
+        i, r = divmod(scaling, 1)
+        i = int(i)
+        r = round(100 * r)
+        output_file = (output / input.name).with_stem(
+            f"{input.stem}_{width}x{height}_{i}p{r}"
+        )
+    logger.info(f"Generating {output_file}")
 
-    # input_image = cv2.imread(str(input_file))
-    # output_image = transform_image(input_image, width, height, scaling)
-    # print(output_file)
-    # output_file.parent.mkdir(exist_ok=True)
-    # cv2.imwrite(str(output_file), output_image)
-    raise NotImplementedError
+    input_image = cv2.imread(str(input))
+    output_image = transform_image(input_image, width, height, scaling)
+    output_file.parent.mkdir(exist_ok=True)
+    cv2.imwrite(str(output_file), output_image)
 
 
 def create_app(settings: AppSettings = settings, use_callback: bool = True):
