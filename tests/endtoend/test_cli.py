@@ -1,10 +1,15 @@
 from pathlib import Path
 import pytest
+from typer.testing import CliRunner
 
-from pokepapers.cli import download
+from pokepapers.cli.app import app
+
+
+runner = CliRunner()
 
 
 @pytest.mark.vcr
 def test_download(tmp_path: Path):
-    download(downloads_dir=tmp_path)
+    result = runner.invoke(app, ["download", "--downloads-dir", str(tmp_path)])
+    assert result.exit_code == 0
     assert len(list(tmp_path.iterdir())) > 0
